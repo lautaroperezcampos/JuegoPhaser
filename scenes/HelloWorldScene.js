@@ -56,7 +56,11 @@ export default class HelloWorldScene extends Phaser.Scene {
       color: "#ffffff",
     });
 
+    this.createPlatformTextures();
+    this.createPlatforms();
+
     this.items = this.physics.add.group();
+    this.physics.add.collider(this.items, this.platforms);
     this.physics.add.overlap(logo, this.items, this.collectItem, null, this);
 
     this.createItemTextures();
@@ -74,6 +78,14 @@ export default class HelloWorldScene extends Phaser.Scene {
       callbackScope: this,
       loop: true,
     });
+  }
+
+  createPlatformTextures() {
+    const graphics = this.add.graphics();
+    graphics.fillStyle(0x95a5a6, 1);
+    graphics.fillRect(0, 0, 160, 24);
+    graphics.generateTexture("platform", 160, 24);
+    graphics.destroy();
   }
 
   createItemTextures() {
@@ -104,6 +116,16 @@ export default class HelloWorldScene extends Phaser.Scene {
     graphics.fillPath();
     graphics.generateTexture("diamond", 32, 32);
     graphics.destroy();
+  }
+
+  createPlatforms() {
+    this.platforms = this.physics.add.staticGroup();
+
+    this.platforms.create(400, 580, "platform").setScale(5, 1).refreshBody();
+    this.platforms.create(200, 460, "platform").setScale(1.5, 1).refreshBody();
+    this.platforms.create(600, 380, "platform").setScale(1.3, 1).refreshBody();
+    this.platforms.create(300, 260, "platform").setScale(1.2, 1).refreshBody();
+    this.platforms.create(520, 180, "platform").setScale(1, 1).refreshBody();
   }
 
   spawnItem() {
