@@ -23,27 +23,12 @@ export default class HelloWorldScene extends Phaser.Scene {
   preload() {
     // load assets
     this.load.image("sky", "./public/assets/space3.png");
-    this.load.image("logo", "./public/assets/phaser3-logo.png");
     this.load.image("red", "./public/assets/particles/red.png");
   }
 
   create() {
     // create game objects
     this.add.image(400, 300, "sky");
-
-    const logo = this.physics.add.image(400, 100, "logo");
-    logo.setVelocity(100, 200);
-    logo.setBounce(1, 1);
-    logo.setCollideWorldBounds(true);
-
-    // emmit particles from logo
-    const emitter = this.add.particles(0, 0, "red", {
-      speed: 100,
-      scale: { start: 1, end: 0 },
-      blendMode: "ADD",
-    });
-
-    emitter.startFollow(logo);
 
     this.timerText = this.add.text(16, 16, `Tiempo: ${this.timeLeft}`, {
       fontFamily: "Arial",
@@ -59,12 +44,17 @@ export default class HelloWorldScene extends Phaser.Scene {
 
     this.createPlatformTextures();
     this.createPlatforms();
+    this.createPlayerTexture();
+    this.createPlayer();
 
     this.items = this.physics.add.group();
     this.physics.add.collider(this.items, this.platforms);
-    this.physics.add.overlap(logo, this.items, this.collectItem, null, this);
+    this.physics.add.collider(this.player, this.platforms);
+    this.physics.add.overlap(this.player, this.items, this.collectItem, null, this);
 
     this.createItemTextures();
+
+    this.cursors = this.input.keyboard.createCursorKeys();
 
     this.spawnEvent = this.time.addEvent({
       delay: 500,
@@ -137,6 +127,21 @@ export default class HelloWorldScene extends Phaser.Scene {
     this.platforms.create(520, 180, "platform").setScale(1, 1).refreshBody();
   }
 
+  createPlayerTexture() {
+    const graphics = this.add.graphics();
+    graphics.fillStyle(0x2ecc71, 1);
+    graphics.fillRect(0, 0, 32, 48);
+    graphics.generateTexture("player", 32, 48);
+    graphics.destroy();
+  }
+
+  createPlayer() {
+    this.player = this.physics.add.sprite(400, 520, "player");
+    this.player.setCollideWorldBounds(true);
+    this.player.setBounce(0.1);
+    this.player.body.setSize(32, 48);
+  }
+
   spawnItem() {
     if (this.gameEnded) {
       return;
@@ -196,29 +201,33 @@ export default class HelloWorldScene extends Phaser.Scene {
       this.spawnEvent.remove(false);
     }
 
-    const message = won ? "¡GANASTE!" : "¡PERDISTE!";
     const detail = won
       ? "Superaste los 100 puntos."
       : "Se acabó el tiempo.";
 
-    this.add
-      .text(400, 300, message, {
-        fontFamily: "Arial",
-        fontSize: "64px",
-        color: won ? "#2ecc71" : "#ff0000",
-      })
-      .setOrigin(0.5);
-
-    this.add
-      .text(400, 360, detail, {
-        fontFamily: "Arial",
-        fontSize: "24px",
-        color: "#ffffff",
-      })
-      .setOrigin(0.5);
+    this.scene.start("game-over", {
+      won,
+      score: this.score,
+      timeLeft: this.timeLeft,
+      reason: detail,
+    });
   }
 
   update() {
+    if (this.player && this.cursors) {
+      if (this.cursors.left.isDown) {
+        this.player.setVelocityX(-260);
+      } else if (this.cursors.right.isDown) {
+        this.player.setVelocityX(260);
+      } else {
+        this.player.setVelocityX(0);
+      }
+
+      if (this.cursors.up.isDown && this.player.body.onFloor()) {
+        this.player.setVelocityY(-420);
+      }
+    }
+
     this.items.children.each((item) => {
       if (!item || !item.body) {
         return;
