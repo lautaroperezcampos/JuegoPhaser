@@ -5,13 +5,13 @@ export default class HelloWorldScene extends Phaser.Scene {
     // key of the scene
     // the key will be used to start the scene by other scenes
     super("hello-world");
+    this.timeLeft = 30;
+    this.gameEnded = false;
   }
 
   init() {
-    // this is called before the scene is created
-    // init variables
-    // take data passed from other scenes
-    // data object param {}
+    this.timeLeft = 30;
+    this.gameEnded = false;
   }
 
   preload() {
@@ -38,6 +38,51 @@ export default class HelloWorldScene extends Phaser.Scene {
     });
 
     emitter.startFollow(logo);
+
+    this.timerText = this.add.text(16, 16, `Tiempo: ${this.timeLeft}`, {
+      fontFamily: "Arial",
+      fontSize: "24px",
+      color: "#ffffff",
+    });
+
+    this.time.addEvent({
+      delay: 1000,
+      callback: this.tickTimer,
+      callbackScope: this,
+      loop: true,
+    });
+  }
+
+  tickTimer() {
+    if (this.gameEnded) {
+      return;
+    }
+
+    this.timeLeft -= 1;
+    this.timerText.setText(`Tiempo: ${this.timeLeft}`);
+
+    if (this.timeLeft <= 0) {
+      this.endGame();
+    }
+  }
+
+  endGame() {
+    this.gameEnded = true;
+    this.add
+      .text(400, 300, "¡PERDISTE!", {
+        fontFamily: "Arial",
+        fontSize: "64px",
+        color: "#ff0000",
+      })
+      .setOrigin(0.5);
+
+    this.add
+      .text(400, 360, "Se acabó el tiempo. Recarga la página para jugar de nuevo.", {
+        fontFamily: "Arial",
+        fontSize: "24px",
+        color: "#ffffff",
+      })
+      .setOrigin(0.5);
   }
 
   update() {
