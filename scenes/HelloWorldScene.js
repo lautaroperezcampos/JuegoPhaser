@@ -10,6 +10,7 @@ export default class HelloWorldScene extends Phaser.Scene {
       square: 20,
       triangle: 15,
       diamond: 25,
+      bad: -20,
     };
   }
 
@@ -115,6 +116,14 @@ export default class HelloWorldScene extends Phaser.Scene {
     graphics.closePath();
     graphics.fillPath();
     graphics.generateTexture("diamond", 32, 32);
+    graphics.clear();
+
+    graphics.fillStyle(0x8e44ad, 1);
+    graphics.fillRect(0, 0, 32, 32);
+    graphics.lineStyle(4, 0xffffff, 1);
+    graphics.strokeLineShape(new Phaser.Geom.Line(8, 8, 24, 24));
+    graphics.strokeLineShape(new Phaser.Geom.Line(24, 8, 8, 24));
+    graphics.generateTexture("bad", 32, 32);
     graphics.destroy();
   }
 
@@ -133,7 +142,7 @@ export default class HelloWorldScene extends Phaser.Scene {
       return;
     }
 
-    const types = ["square", "triangle", "diamond"];
+    const types = ["square", "triangle", "diamond", "bad"];
     const type = Phaser.Math.RND.pick(types);
     const x = Phaser.Math.Between(40, 760);
     const item = this.items.create(x, -20, type);
@@ -143,6 +152,10 @@ export default class HelloWorldScene extends Phaser.Scene {
     item.setData("hitFloor", false);
     item.setCollideWorldBounds(true);
     item.setBounce(0.7);
+
+    if (type === "bad") {
+      item.setTint(0x9b59b6);
+    }
   }
 
   collectItem(player, item) {
