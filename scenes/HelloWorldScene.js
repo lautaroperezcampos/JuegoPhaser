@@ -62,7 +62,7 @@ export default class HelloWorldScene extends Phaser.Scene {
     this.createItemTextures();
 
     this.spawnEvent = this.time.addEvent({
-      delay: 1000,
+      delay: 500,
       callback: this.spawnItem,
       callbackScope: this,
       loop: true,
@@ -118,8 +118,9 @@ export default class HelloWorldScene extends Phaser.Scene {
     item.setVelocity(0, 120);
     item.setData("type", type);
     item.setData("value", this.itemValues[type]);
+    item.setData("hitFloor", false);
     item.setCollideWorldBounds(true);
-    item.setBounce(0.1);
+    item.setBounce(0.7);
   }
 
   collectItem(player, item) {
@@ -183,6 +184,26 @@ export default class HelloWorldScene extends Phaser.Scene {
   }
 
   update() {
-    // update game objects
+    this.items.children.each((item) => {
+      if (!item || !item.body) {
+        return;
+      }
+
+      const touchingFloor = item.body.blocked.down || item.body.touching.down;
+      if (touchingFloor && !item.getData("hitFloor")) {
+        item.setData("hitFloor", true);
+        const value = item.getData("value") || 0;
+        const newValue = value - 5;
+        item.setData("value", newValue);
+
+        if (newValue <= 0) {
+          item.destroy();
+        }
+      }
+
+      if (!touchingFloor && item.getData("hitFloor")) {
+        item.setData("hitFloor", false);
+      }
+    }, this);
   }
 }
